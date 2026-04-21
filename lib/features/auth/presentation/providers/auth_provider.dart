@@ -1,14 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../data/datasources/auth_local_datasource.dart';
-
-// SharedPreferences provider
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError('SharedPreferences must be initialized before use');
-});
+import '../../../../core/providers/shared_prefs_provider.dart';
 
 // AuthLocalDataSource provider
 final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((ref) {

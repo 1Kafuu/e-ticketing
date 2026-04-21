@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Tambahkan ini
 import 'core/theme/app_theme.dart';
-import 'features/auth/presentation/providers/auth_provider.dart'; // Tambahkan ini
 import 'features/splash/presentation/splash_screen.dart';
+import 'package:e_ticketing/core/providers/shared_prefs_provider.dart';
 
 void main() async {
   // 1. Wajib panggil ini agar SharedPreferences bisa berjalan di native

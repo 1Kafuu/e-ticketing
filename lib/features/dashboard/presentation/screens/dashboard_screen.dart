@@ -5,7 +5,13 @@ import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/text_field.dart';
 import '../../../../core/constants/asset_constants.dart';
+import '../../../tickets/domain/entities/ticket_entity.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
+import '../../../tickets/presentation/providers/ticket_provider.dart';
+import '../../../tickets/presentation/screens/create_ticket_screen.dart';
+import '../../../tickets/presentation/screens/ticket_list_screen.dart';
+import '../../../tickets/presentation/screens/ticket_detail_screen.dart';
+import '../../../tickets/presentation/widgets/ticket_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -14,6 +20,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final textTheme = Theme.of(context).textTheme;
+    final ticketsAsync = ref.watch(ticketListProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -56,7 +63,12 @@ class DashboardScreen extends ConsumerWidget {
       // Floating Action Button sesuai referensi (FR-005: Membuat tiket)
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {}, // Logika ke Create Ticket Screen
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateTicketScreen()),
+          );
+        },
         backgroundColor: AppColors.primary,
         elevation: 10,
         shape: const CircleBorder(),
@@ -83,7 +95,14 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(width: 48), // Spacer untuk Notch FAB
               IconButton(
                 icon: const Icon(Icons.payment_outlined),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TicketListScreen(),
+                    ),
+                  );
+                },
               ),
               IconButton(
                 icon: const Icon(Icons.person_pin_outlined),
@@ -101,8 +120,9 @@ class DashboardScreen extends ConsumerWidget {
         ),
       ),
 
-      body: SingleChildScrollView(
-        child: Padding(
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(ticketListProvider.future),
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,7 +137,7 @@ class DashboardScreen extends ConsumerWidget {
 
               // 3. Section "Ongoing Tickets" sesuai desain
               const SizedBox(height: 24),
-              _buildOngoingSection(context),
+              _buildOngoingSection(context, ticketsAsync),
             ],
           ),
         ),
@@ -193,18 +213,25 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   // Widget Helper: Ongoing Tickets Section
-  Widget _buildOngoingSection(BuildContext context) {
+  Widget _buildOngoingSection(BuildContext context, AsyncValue<List<TicketEntity>> ticketsAsync) {
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Ongoing Tickets",
+              "Tickets",
               style: Theme.of(context).textTheme.titleLarge,
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TicketListScreen(),
+                  ),
+                );
+              },
               child: const Text(
                 "view all",
                 style: TextStyle(color: AppColors.textSecondary),
@@ -214,70 +241,99 @@ class DashboardScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         // GridView untuk meniru tata letak Ongoing Projects
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16.0,
-            mainAxisSpacing: 16.0,
-            childAspectRatio: 0.8, // Menyesuaikan tinggi card
-          ),
-          itemCount: 2, // Mock: Hanya 2 tiket berjalan
-          itemBuilder: (context, index) {
-            // Kita akan menggunakan widget stateless "TicketCard" yang nanti akan dibuat di core
-            return _buildTicketCardMock(context);
+        const SizedBox(height: 12),
+
+        ticketsAsync.when(
+          data: (tickets) {
+            if (tickets.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text("No ongoing tickets found"),
+                ),
+              );
+            }
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16.0,
+                mainAxisSpacing: 16.0,
+                childAspectRatio: 0.8,
+              ),
+              itemCount: tickets.length > 4
+                  ? 4
+                  : tickets.length, // Batasi 4 di dashboard
+              itemBuilder: (context, index) {
+                final ticket = tickets[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            TicketDetailScreen(ticket: ticket),
+                      ),
+                    );
+                  },
+                  child: TicketCard(ticket: ticket),
+                );
+              },
+            );
           },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text('Error: $err')),
         ),
       ],
     );
   }
 
   // MOCK WIDGET: Ticket Card (Berdasarkan model data)
-  Widget _buildTicketCardMock(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: AppColors.primary, // Card warna utama sesuai desain
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "May 20, 2026",
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.white70),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "IT Helpdesk App",
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: Colors.white),
-          ),
-          Text(
-            "Status: In Progress",
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.warning),
-          ),
-          const Spacer(),
-          // Meniru Progress Bar di reference
-          LinearProgressIndicator(
-            value: 0.6, // Mock Progress 60%
-            backgroundColor: Colors.white24,
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.warning),
-            borderRadius: BorderRadius.circular(5.0),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            "60%",
-            style: TextStyle(color: Colors.white, fontSize: 10),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildTicketCardMock(BuildContext context) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(16.0),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.primary, // Card warna utama sesuai desain
+  //       borderRadius: BorderRadius.circular(15.0),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Text(
+  //           "May 20, 2026",
+  //           style: Theme.of(
+  //             context,
+  //           ).textTheme.bodySmall?.copyWith(color: Colors.white70),
+  //         ),
+  //         const SizedBox(height: 8),
+  //         Text(
+  //           "IT Helpdesk App",
+  //           style: Theme.of(
+  //             context,
+  //           ).textTheme.titleLarge?.copyWith(color: Colors.white),
+  //         ),
+  //         Text(
+  //           "Status: In Progress",
+  //           style: Theme.of(
+  //             context,
+  //           ).textTheme.bodySmall?.copyWith(color: AppColors.warning),
+  //         ),
+  //         const Spacer(),
+  //         // Meniru Progress Bar di reference
+  //         LinearProgressIndicator(
+  //           value: 0.6, // Mock Progress 60%
+  //           backgroundColor: Colors.white24,
+  //           valueColor: const AlwaysStoppedAnimation<Color>(AppColors.warning),
+  //           borderRadius: BorderRadius.circular(5.0),
+  //         ),
+  //         const SizedBox(height: 4),
+  //         const Text(
+  //           "60%",
+  //           style: TextStyle(color: Colors.white, fontSize: 10),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
