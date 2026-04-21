@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Wajib sesuai CLAUDE.md
-import 'core/themes/app_theme.dart';
+import 'core/theme/app_theme.dart';
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 
 void main() {

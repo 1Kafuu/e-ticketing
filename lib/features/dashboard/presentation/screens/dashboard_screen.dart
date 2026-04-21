@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' hide TextField;
-import '../../../../core/themes/app_colors.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/text_field.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -89,9 +89,7 @@ class DashboardScreen extends StatelessWidget {
 
   // Widget Helper: Search Section
   Widget _buildSearchSection() {
-    return const SizedBox(
-      height: 50,
-      child: CustomTextField(
+    return const CustomTextField (
         label: "Search", 
         hint: "Search tickets...",
         icon: Icons.search,
@@ -111,7 +109,6 @@ class DashboardScreen extends StatelessWidget {
             borderSide: BorderSide.none,
           ),
         ),
-      ),
     );
   }
 

@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import '../themes/app_colors.dart';
+import '../theme/app_colors.dart';
 
 class StatusBadge extends StatelessWidget {
   final String status;
