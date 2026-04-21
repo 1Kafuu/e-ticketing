@@ -5,6 +5,7 @@ import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/text_field.dart';
 import '../../../../core/constants/asset_constants.dart';
+import '../../../profile/presentation/screens/profile_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -24,7 +25,10 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             Text("Hi ${user?.name ?? 'User'}!", style: textTheme.headlineLarge),
             Text("Good Morning", style: textTheme.bodyMedium),
-            Text("Role: ${user?.role.name.toUpperCase() ?? '-'}", style: textTheme.bodySmall),
+            Text(
+              "Role: ${user?.role.name.toUpperCase() ?? '-'}",
+              style: textTheme.bodySmall,
+            ),
           ],
         ),
         actions: [
@@ -83,7 +87,14 @@ class DashboardScreen extends ConsumerWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.person_pin_outlined),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfileScreen(),
+                    ),
+                  );
+                },
               ),
             ],
           ),
