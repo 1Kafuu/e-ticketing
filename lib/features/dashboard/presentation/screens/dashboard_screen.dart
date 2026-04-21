@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart' hide TextField;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/text_field.dart';
+import '../../../../core/constants/asset_constants.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         // Meniru bagian kiri AppBar: Welcome User
+        toolbarHeight: 100,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Hi Jenifer!", style: textTheme.headlineLarge),
+            Text("Hi ${user?.name ?? 'User'}!", style: textTheme.headlineLarge),
             Text("Good Morning", style: textTheme.bodyMedium),
+            Text("Role: ${user?.role.name.toUpperCase() ?? '-'}", style: textTheme.bodySmall),
           ],
         ),
         actions: [
@@ -26,14 +33,22 @@ class DashboardScreen extends StatelessWidget {
             onPressed: () {}, // Logika ke halaman notifikasi
             icon: const Icon(Icons.notifications_none),
           ),
-          // Meniru bagian menu burger di kanan
           IconButton(
-            onPressed: () {}, 
-            icon: const Icon(Icons.grid_view),
+            onPressed: () async {
+              await ref.read(authRepositoryProvider).logout();
+              ref.read(currentUserProvider.notifier).setUser(null);
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            icon: const Icon(Icons.logout, color: Colors.red),
           ),
         ],
       ),
-      
+
       // Floating Action Button sesuai referensi (FR-005: Membuat tiket)
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
@@ -41,9 +56,9 @@ class DashboardScreen extends StatelessWidget {
         backgroundColor: AppColors.primary,
         elevation: 10,
         shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 30,),
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
-      
+
       // Bottom Navigation Bar sesuai referensi
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
@@ -53,16 +68,28 @@ class DashboardScreen extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              IconButton(icon: const Icon(Icons.home_outlined), onPressed: () {}),
-              IconButton(icon: const Icon(Icons.library_books_outlined), onPressed: () {}),
+              IconButton(
+                icon: const Icon(Icons.home_outlined),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: const Icon(Icons.library_books_outlined),
+                onPressed: () {},
+              ),
               const SizedBox(width: 48), // Spacer untuk Notch FAB
-              IconButton(icon: const Icon(Icons.payment_outlined), onPressed: () {}),
-              IconButton(icon: const Icon(Icons.person_pin_outlined), onPressed: () {}),
+              IconButton(
+                icon: const Icon(Icons.payment_outlined),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: const Icon(Icons.person_pin_outlined),
+                onPressed: () {},
+              ),
             ],
           ),
         ),
       ),
-      
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -72,11 +99,11 @@ class DashboardScreen extends StatelessWidget {
               // 1. Baris Search sesuai desain
               const SizedBox(height: 8),
               _buildSearchSection(),
-              
+
               // 2. Banner "Welcome" sesuai desain
               const SizedBox(height: 24),
               _buildWelcomeBanner(context),
-              
+
               // 3. Section "Ongoing Tickets" sesuai desain
               const SizedBox(height: 24),
               _buildOngoingSection(context),
@@ -89,67 +116,70 @@ class DashboardScreen extends StatelessWidget {
 
   // Widget Helper: Search Section
   Widget _buildSearchSection() {
-    return const CustomTextField (
-        label: "Search", 
-        hint: "Search tickets...",
-        icon: Icons.search,
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
-          hintText: "Search",
-          hintStyle: TextStyle(color: AppColors.textSecondary),
-          filled: true,
-          fillColor: Colors.white, // Meniru warna accent bersih
-          contentPadding: EdgeInsets.symmetric(horizontal: 20),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(25.0)),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(25.0)),
-            borderSide: BorderSide.none,
-          ),
+    return const CustomTextField(
+      label: "Search",
+      hint: "Search tickets...",
+      icon: Icons.search,
+      decoration: InputDecoration(
+        prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+        hintText: "Search",
+        hintStyle: TextStyle(color: AppColors.textSecondary),
+        filled: true,
+        fillColor: Colors.white, // Meniru warna accent bersih
+        contentPadding: EdgeInsets.symmetric(horizontal: 20),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(25.0)),
+          borderSide: BorderSide.none,
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(25.0)),
+          borderSide: BorderSide.none,
+        ),
+      ),
     );
   }
 
   // Widget Helper: Welcome Banner
   Widget _buildWelcomeBanner(BuildContext context) {
-  return Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(16.0),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(15.0),
-      border: Border.all(color: Colors.grey.shade200),
-    ),
-    child: Row(
-      children: [
-        Image(
-          image: const AssetImage('assets/images/welcome_illustration.png'), 
-          width: 80,
-          height: 80,
-          errorBuilder: (context, error, stackTrace) {
-            return const SizedBox( 
-              width: 80, 
-              height: 80, 
-              child: Icon(Icons.image),
-            );
-          },
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Welcome!", style: Theme.of(context).textTheme.titleLarge),
-              Text("Let's manage your tickets smoothly.", style: Theme.of(context).textTheme.bodyMedium),
-            ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15.0),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Image(
+            image: const AssetImage(AssetConstants.welcomeIllustration),
+            width: 80,
+            height: 80,
+            errorBuilder: (context, error, stackTrace) {
+              return const SizedBox(
+                width: 80,
+                height: 80,
+                child: Icon(Icons.image),
+              );
+            },
           ),
-        ),
-      ],
-    ),
-  );
-}
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Welcome!", style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  "Let's manage your tickets smoothly.",
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   // Widget Helper: Ongoing Tickets Section
   Widget _buildOngoingSection(BuildContext context) {
@@ -158,10 +188,16 @@ class DashboardScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Ongoing Tickets", style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              "Ongoing Tickets",
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             TextButton(
-              onPressed: () {}, 
-              child: const Text("view all", style: TextStyle(color: AppColors.textSecondary)),
+              onPressed: () {},
+              child: const Text(
+                "view all",
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
             ),
           ],
         ),
@@ -179,7 +215,7 @@ class DashboardScreen extends StatelessWidget {
           itemCount: 2, // Mock: Hanya 2 tiket berjalan
           itemBuilder: (context, index) {
             // Kita akan menggunakan widget stateless "TicketCard" yang nanti akan dibuat di core
-            return _buildTicketCardMock(context); 
+            return _buildTicketCardMock(context);
           },
         ),
       ],
@@ -197,10 +233,25 @@ class DashboardScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("May 20, 2026", style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70)),
+          Text(
+            "May 20, 2026",
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.white70),
+          ),
           const SizedBox(height: 8),
-          Text("IT Helpdesk App", style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white)),
-          Text("Status: In Progress", style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.warning)),
+          Text(
+            "IT Helpdesk App",
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: Colors.white),
+          ),
+          Text(
+            "Status: In Progress",
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.warning),
+          ),
           const Spacer(),
           // Meniru Progress Bar di reference
           LinearProgressIndicator(
@@ -210,7 +261,10 @@ class DashboardScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(5.0),
           ),
           const SizedBox(height: 4),
-          const Text("60%", style: TextStyle(color: Colors.white, fontSize: 10)),
+          const Text(
+            "60%",
+            style: TextStyle(color: Colors.white, fontSize: 10),
+          ),
         ],
       ),
     );
