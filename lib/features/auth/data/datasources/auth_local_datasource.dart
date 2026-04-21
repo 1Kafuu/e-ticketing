@@ -5,6 +5,7 @@ import '../../../../core/constants/pref_keys.dart';
 abstract class AuthLocalDataSource {
   Future<void> saveUser(Map<String, dynamic> userMap);
   Future<Map<String, dynamic>?> getUser();
+  Future<List<Map<String, dynamic>>?> getAllUsers();
   Future<void> clearUser();
 }
 
@@ -23,6 +24,20 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     final jsonString = sharedPreferences.getString(PrefsKeys.userData);
     if (jsonString != null) {
       return jsonDecode(jsonString);
+    }
+    return null;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>?> getAllUsers() async {
+    final jsonString = sharedPreferences.getString(PrefsKeys.userData);
+    if (jsonString != null) {
+      final decoded = jsonDecode(jsonString);
+      if (decoded is List) {
+        return (decoded as List).map((e) => e as Map<String, dynamic>).toList();
+      }
+      // Jika bukan list, return sebagai single item list
+      return [decoded as Map<String, dynamic>];
     }
     return null;
   }
