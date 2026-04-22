@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:e_ticketing/features/tickets/domain/entities/ticket_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -73,6 +74,36 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                         style: const TextStyle(color: Colors.grey),
                       ),
                       const Divider(height: 40),
+                      // Gunakan operator spread (...) dengan list if untuk menyisipkan widget secara kondisional
+                      if (user?.role.name == 'admin') ...[
+                        const SizedBox(height: 24),
+                        const Text(
+                          "Update Status",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          children: TicketStatus.values.map((status) {
+                            return ActionChip(
+                              label: Text(status.label),
+                              onPressed: () {
+                                ref
+                                    .read(ticketListProvider.notifier)
+                                    .updateStatus(currentTicket.id, status);
+                              },
+                              backgroundColor: currentTicket.status == status
+                                  ? AppColors.primary.withOpacity(0.2)
+                                  : null,
+                            );
+                          }).toList(),
+                        ),
+                        const Divider(height: 50),
+                      ],
+
                       const Text(
                         "Tracking Status",
                         style: TextStyle(
@@ -85,8 +116,8 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                       TicketTrackingStepper(
                         currentStatus: currentTicket.status,
                       ),
-
                       const Divider(height: 50),
+
                       const Text(
                         "Description",
                         style: TextStyle(
@@ -100,7 +131,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                         style: const TextStyle(fontSize: 15, height: 1.5),
                       ),
                       const SizedBox(height: 30),
-                      
+
                       // --- LAMPIRAN ---
                       if (currentTicket.attachments.isNotEmpty) ...[
                         const Text(

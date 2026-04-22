@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Tambahkan ini
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/app_theme.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'package:e_ticketing/core/providers/shared_prefs_provider.dart';
+import 'package:e_ticketing/core/services/notification_service.dart';
 
 void main() async {
   // 1. Wajib panggil ini agar SharedPreferences bisa berjalan di native
   WidgetsFlutterBinding.ensureInitialized(); 
+
+  await NotificationService.init();
 
   // 2. Inisialisasi SharedPreferences
   final prefs = await SharedPreferences.getInstance();

@@ -6,6 +6,7 @@ import '../../domain/repositories/ticket_repository.dart';
 import '../../data/repositories/ticket_repository_impl.dart';
 import '../../data/datasources/ticket_local_data_source.dart';
 import '../../../../core/providers/shared_prefs_provider.dart';
+import '../../../../core/services/notification_service.dart';
 
 // 2. Provider untuk Local Data Source
 final ticketLocalDataSourceProvider = Provider<TicketLocalDataSource>((ref) {
@@ -62,6 +63,31 @@ class TicketListNotifier extends AsyncNotifier<List<TicketEntity>> {
       state = AsyncValue.error(e, stack);
     }
   }
+
+  Future<void> updateStatus(String ticketId, TicketStatus newStatus) async {
+  try {
+    // 1. UPDATE DATA DI REPOSITORY (Wajib agar tersimpan di Local Storage)
+    // Ini merujuk pada fungsi yang baru saja Anda tambahkan di repository
+    await ref.read(ticketRepositoryProvider).updateTicketStatus(ticketId, newStatus);
+
+    // 2. REFRESH STATE (Wajib agar UI Dashboard & Detail berubah secara reaktif)
+    // Kita ambil data terbaru dari local storage lalu masukkan ke state
+    final updatedTickets = await ref.read(ticketRepositoryProvider).getTickets();
+    state = AsyncValue.data(updatedTickets);
+
+    // 3. TAMPILKAN NOTIFIKASI (FR-007)
+    // Dipanggil SETELAH data berhasil disimpan
+    await NotificationService.showNotification(
+      id: ticketId.hashCode,
+      title: "Update Tiket #${ticketId.toUpperCase()}",
+      body: "Status tiket Anda kini: ${newStatus.label}",
+    );
+    
+  } catch (e, stack) {
+    // Jika terjadi error (misal: ID tidak ditemukan), state akan menangkapnya
+    state = AsyncValue.error(e, stack);
+  }
+}
 }
 
 final ticketListProvider =
@@ -71,14 +97,18 @@ final ticketListProvider =
 
 final ticketStatsProvider = Provider<Map<String, int>>((ref) {
   final ticketsAsync = ref.watch(ticketListProvider);
-  
+
   return ticketsAsync.maybeWhen(
     data: (tickets) {
       return {
         'total': tickets.length, // Total tiket [cite: 87]
         'open': tickets.where((t) => t.status == TicketStatus.open).length,
-        'inProgress': tickets.where((t) => t.status == TicketStatus.inProgress).length,
-        'resolved': tickets.where((t) => t.status == TicketStatus.resolved).length,
+        'inProgress': tickets
+            .where((t) => t.status == TicketStatus.inProgress)
+            .length,
+        'resolved': tickets
+            .where((t) => t.status == TicketStatus.resolved)
+            .length,
         'closed': tickets.where((t) => t.status == TicketStatus.closed).length,
       };
     },
