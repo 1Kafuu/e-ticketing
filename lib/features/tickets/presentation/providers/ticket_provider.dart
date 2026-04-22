@@ -7,6 +7,7 @@ import '../../data/repositories/ticket_repository_impl.dart';
 import '../../data/datasources/ticket_local_data_source.dart';
 import '../../../../core/providers/shared_prefs_provider.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 // 2. Provider untuk Local Data Source
 final ticketLocalDataSourceProvider = Provider<TicketLocalDataSource>((ref) {
@@ -68,7 +69,8 @@ class TicketListNotifier extends AsyncNotifier<List<TicketEntity>> {
   try {
     // 1. UPDATE DATA DI REPOSITORY (Wajib agar tersimpan di Local Storage)
     // Ini merujuk pada fungsi yang baru saja Anda tambahkan di repository
-    await ref.read(ticketRepositoryProvider).updateTicketStatus(ticketId, newStatus);
+    final user = ref.read(currentUserProvider);
+    await ref.read(ticketRepositoryProvider).updateTicketStatus(ticketId, newStatus, user?.name ?? "Admin");
 
     // 2. REFRESH STATE (Wajib agar UI Dashboard & Detail berubah secara reaktif)
     // Kita ambil data terbaru dari local storage lalu masukkan ke state

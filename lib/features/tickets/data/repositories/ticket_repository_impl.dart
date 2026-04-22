@@ -2,6 +2,7 @@ import 'package:e_ticketing/features/tickets/domain/entities/ticket_enum.dart';
 
 import '../../domain/entities/ticket_entity.dart';
 import '../../domain/entities/comment_entity.dart';
+import '../../domain/entities/ticket_history_entity.dart';
 import '../../domain/repositories/ticket_repository.dart';
 import '../datasources/ticket_local_data_source.dart';
 import '../models/ticket_model.dart';
@@ -53,29 +54,40 @@ class TicketRepositoryImpl implements TicketRepository {
   Future<void> updateTicketStatus(
     String ticketId,
     TicketStatus newStatus,
+    String adminName,
   ) async {
-    // 1. Ambil semua tiket yang ada di local storage
     final tickets = await getTickets();
-
-    // 2. Cari indeks tiket yang ingin diupdate
     final index = tickets.indexWhere((t) => t.id == ticketId);
 
     if (index != -1) {
-      // 3. Buat salinan tiket dengan status baru
-      final updatedTicket = TicketEntity(
-        id: tickets[index].id,
-        title: tickets[index].title,
-        description: tickets[index].description,
-        status: newStatus, // Status baru disisipkan di sini
-        priority: tickets[index].priority,
-        createdAt: tickets[index].createdAt,
-        userId: tickets[index].userId,
-        attachments: tickets[index].attachments,
-        comments: tickets[index].comments,
+      final ticket = tickets[index];
+
+      // 1. BUAT OBJEK HISTORY BARU
+      final newHistoryEntry = TicketHistoryEntity(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        action: "Status Updated",
+        description: "Status tiket diubah menjadi ${newStatus.label}",
+        timestamp: DateTime.now(),
+        updatedBy: adminName,
       );
 
-      // 4. Simpan kembali ke local storage melalui fungsi updateTicket yang sudah Anda buat
-      await updateTicket(updatedTicket);
+      // 2. UPDATE TIKET DENGAN LIST HISTORY YANG BARU
+      final updatedTicket = TicketModel(
+        id: ticket.id,
+        title: ticket.title,
+        description: ticket.description,
+        status: newStatus, // Update status
+        priority: ticket.priority,
+        createdAt: ticket.createdAt,
+        userId: ticket.userId,
+        attachments: ticket.attachments,
+        comments: ticket.comments,
+        // PENTING: Gabungkan history lama dengan yang baru
+        history: [...ticket.history, newHistoryEntry],
+      );
+
+      // 3. SIMPAN KEMBALI KE LOCAL DATA SOURCE
+      await localDataSource.updateTicket(updatedTicket.toJson());
     }
   }
 

@@ -11,6 +11,7 @@ import '../../../tickets/presentation/providers/ticket_provider.dart';
 import '../../../tickets/presentation/screens/create_ticket_screen.dart';
 import '../../../tickets/presentation/screens/ticket_list_screen.dart';
 import '../../../tickets/presentation/screens/ticket_detail_screen.dart';
+import '../../../tickets/presentation/screens/ticket_history_screen.dart';
 import '../../../tickets/presentation/widgets/ticket_card.dart';
 import '../../../dashboard/presentation/widgets/stat_card.dart';
 
@@ -91,8 +92,15 @@ class DashboardScreen extends ConsumerWidget {
                 onPressed: () {},
               ),
               IconButton(
-                icon: const Icon(Icons.library_books_outlined),
-                onPressed: () {},
+                icon: const Icon(Icons.history),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GlobalHistoryScreen(),
+                    ),
+                  );
+                },
               ),
               const SizedBox(width: 48), // Spacer untuk Notch FAB
               IconButton(

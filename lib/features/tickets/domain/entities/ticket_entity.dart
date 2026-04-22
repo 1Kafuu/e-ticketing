@@ -1,5 +1,6 @@
 import 'ticket_enum.dart';
 import 'comment_entity.dart';
+import 'ticket_history_entity.dart';
 
 class TicketEntity {
   final String id;
@@ -11,6 +12,7 @@ class TicketEntity {
   final String userId;
   final List<String> attachments;
   final List<CommentEntity> comments;
+  final List<TicketHistoryEntity> history;
 
   const TicketEntity({
     required this.id,
@@ -22,5 +24,6 @@ class TicketEntity {
     required this.userId,
     this.attachments = const [],
     this.comments = const [],
+    this.history = const []
   });
 }

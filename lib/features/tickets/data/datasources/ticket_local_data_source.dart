@@ -6,7 +6,7 @@ abstract class TicketLocalDataSource {
   Future<void> saveTickets(List<Map<String, dynamic>> tickets);
   Future<List<Map<String, dynamic>>> getTickets();
   Future<void> addTicket(Map<String, dynamic> ticket);
-  Future<void> updateTicket(Map<String, dynamic> updatedTicket);
+  Future<void>  updateTicket(Map<String, dynamic> updatedTicket);
   Future<void> deleteTicket(String ticketId);
 }
 

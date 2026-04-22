@@ -15,5 +15,5 @@ abstract class TicketRepository {
 
   Future<void> addComment(String ticketId, CommentEntity comment, {String? parentCommentId});
 
-  Future<void> updateTicketStatus(String ticketId, TicketStatus newStatus);
+  Future<void> updateTicketStatus(String ticketId, TicketStatus newStatus, String adminName);
 }

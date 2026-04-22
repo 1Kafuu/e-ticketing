@@ -1,6 +1,7 @@
 import '../../domain/entities/ticket_entity.dart';
 import '../../domain/entities/ticket_enum.dart';
 import '../../domain/entities/comment_entity.dart';
+import '../../domain/entities/ticket_history_entity.dart';
 
 class TicketModel extends TicketEntity {
   const TicketModel({
@@ -13,6 +14,7 @@ class TicketModel extends TicketEntity {
     required super.userId,
     super.attachments,
     super.comments,
+    super.history,
   });
 
   factory TicketModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class TicketModel extends TicketEntity {
       userId: json['userId'],
       attachments: List<String>.from(json['attachments'] ?? []),
       comments: _commentsFromJson(json['comments'] ?? []),
+      history: _historyFromJson(json['history']),
     );
   }
 
@@ -46,6 +49,7 @@ class TicketModel extends TicketEntity {
       'userId': userId,
       'attachments': attachments,
       'comments': _commentsToJson(comments),
+      'history': _historyToJson(history),
     };
   }
 
@@ -80,5 +84,32 @@ class TicketModel extends TicketEntity {
           },
         )
         .toList();
+  }
+
+  static List<TicketHistoryEntity> _historyFromJson(dynamic json) {
+    if (json == null) return [];
+    return (json as List).map((item) {
+      return TicketHistoryEntity(
+        id: item['id'],
+        action: item['action'],
+        description: item['description'],
+        timestamp: DateTime.parse(item['timestamp']),
+        updatedBy: item['updatedBy'],
+      );
+    }).toList();
+  }
+
+  static List<Map<String, dynamic>> _historyToJson(
+    List<TicketHistoryEntity> historyList,
+  ) {
+    return historyList.map((item) {
+      return {
+        'id': item.id,
+        'action': item.action,
+        'description': item.description,
+        'timestamp': item.timestamp.toIso8601String(),
+        'updatedBy': item.updatedBy,
+      };
+    }).toList();
   }
 }
