@@ -2,11 +2,10 @@ import 'dart:io';
 import 'package:e_ticketing/features/tickets/domain/entities/ticket_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/ticket_entity.dart';
 import '../../domain/entities/comment_entity.dart';
 import '../widgets/status_badge.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/ticket_provider.dart';
 import '../widgets/ticket_tracking_stepper.dart';
 
@@ -44,7 +43,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
         }
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(title: Text(currentTicket.id)),
           body: Column(
             children: [
@@ -65,13 +64,20 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                       const SizedBox(height: 20),
                       Text(
                         currentTicket.title,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        // style: Theme.of(context).textTheme.headlineSmall
+                        //     ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         "Created on: ${currentTicket.createdAt.toString().split('.')[0]}",
-                        style: const TextStyle(color: Colors.grey),
+                        style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600,
+                        ),
                       ),
                       const Divider(height: 40),
                       // Gunakan operator spread (...) dengan list if untuk menyisipkan widget secara kondisional
@@ -96,7 +102,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                                     .updateStatus(currentTicket.id, status);
                               },
                               backgroundColor: currentTicket.status == status
-                                  ? AppColors.primary.withOpacity(0.2)
+                                  ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
                                   : null,
                             );
                           }).toList(),
@@ -118,27 +124,33 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                       ),
                       const Divider(height: 50),
 
-                      const Text(
+                      Text(
                         "Description",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         currentTicket.description,
-                        style: const TextStyle(fontSize: 15, height: 1.5),
+                        style: TextStyle(
+                          fontSize: 15,
+                          height: 1.5,
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade300 : Colors.grey.shade700,
+                        ),
                       ),
                       const SizedBox(height: 30),
 
                       // --- LAMPIRAN ---
                       if (currentTicket.attachments.isNotEmpty) ...[
-                        const Text(
+                        Text(
                           "Attachments",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -175,6 +187,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                           itemBuilder: (context, index) {
                             return _buildCommentItem(
                               currentTicket.comments[index],
+                              isDark: Theme.of(context).brightness == Brightness.dark,
                             );
                           },
                         ),
@@ -220,7 +233,8 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
   }
 
   // Helper Widget: Item Komentar Rekursif
-  Widget _buildCommentItem(CommentEntity comment, {bool isReply = false}) {
+  Widget _buildCommentItem(CommentEntity comment, {bool isReply = false, bool? isDark}) {
+    final dark = isDark ?? Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: EdgeInsets.only(left: isReply ? 40.0 : 0.0, bottom: 16.0),
       child: Column(
@@ -230,21 +244,30 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
             children: [
               CircleAvatar(
                 radius: 14,
-                backgroundColor: AppColors.primary.withOpacity(0.1),
+                backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 child: Text(
                   comment.senderName[0],
-                  style: const TextStyle(fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: dark ? Colors.white : Colors.black,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               Text(
                 comment.senderName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: dark ? Colors.white : Colors.black,
+                ),
               ),
               const Spacer(),
               Text(
                 "${comment.timestamp.hour}:${comment.timestamp.minute.toString().padLeft(2, '0')}",
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: dark ? Colors.grey.shade400 : Colors.grey.shade600,
+                ),
               ),
             ],
           ),
@@ -252,20 +275,29 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: dark ? Colors.grey.shade900 : Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: dark ? Colors.grey.shade700 : Colors.grey.shade200),
             ),
-            child: Text(comment.message),
+            child: Text(
+              comment.message,
+              style: TextStyle(color: dark ? Colors.white : Colors.black),
+            ),
           ),
           if (!isReply)
             TextButton(
               onPressed: () => setState(() => _replyingTo = comment),
-              child: const Text("Balas", style: TextStyle(fontSize: 12)),
+              child: Text(
+                "Balas",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: dark ? Colors.grey.shade400 : Colors.grey.shade600,
+                ),
+              ),
             ),
           if (comment.replies.isNotEmpty)
             ...comment.replies.map(
-              (reply) => _buildCommentItem(reply, isReply: true),
+              (reply) => _buildCommentItem(reply, isDark: dark, isReply: true),
             ),
         ],
       ),
@@ -274,6 +306,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
 
   // Helper Widget: Input Bar
   Widget _buildCommentInput(dynamic user, String ticketId) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: EdgeInsets.only(
         left: 16,
@@ -282,10 +315,10 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
         bottom: MediaQuery.of(context).padding.bottom + 12,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.grey.shade900 : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: isDark ? Colors.black45 : Colors.black12,
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -298,13 +331,16 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               margin: const EdgeInsets.only(bottom: 8),
-              color: Colors.grey.shade100,
+              color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
                       "Membalas ${_replyingTo!.senderName}...",
-                      style: const TextStyle(fontSize: 12),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -320,21 +356,23 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: TextField(
                     controller: _commentController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: "Tulis komentar...",
                       border: InputBorder.none,
+                      hintStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                     ),
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.send, color: AppColors.primary),
+                icon: Icon(Icons.send, color: Theme.of(context).colorScheme.primary),
                 onPressed: () async {
                   if (_commentController.text.trim().isEmpty) return;
                   final newComment = CommentEntity(
@@ -365,15 +403,20 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
   }
 
   Widget _buildPriorityTag(dynamic priority) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: isDark ? Colors.grey.shade800 : Colors.grey[200],
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         priority.toString().split('.').last.toUpperCase(),
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : Colors.black,
+        ),
       ),
     );
   }

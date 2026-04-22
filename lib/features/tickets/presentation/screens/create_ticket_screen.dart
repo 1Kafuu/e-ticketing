@@ -2,11 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/id_generator.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/ticket_entity.dart';
-import '../../domain/entities/ticket_enum.dart'; // Pastikan nama file enum benar
+import '../../domain/entities/ticket_enum.dart';
 import '../providers/ticket_provider.dart';
 
 class CreateTicketScreen extends ConsumerStatefulWidget {
@@ -35,7 +34,7 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 70, // Kompresi sedikit agar tidak terlalu berat di SharedPreferences
+      imageQuality: 70,
     );
     if (image != null) {
       setState(() {
@@ -61,11 +60,8 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
       return;
     }
 
-    // Mengambil list tiket saat ini untuk menentukan sequence ID
     final currentTickets = ref.read(ticketListProvider).value ?? [];
     final nextSequence = currentTickets.length + 1;
-    
-    // Menggunakan IdGenerator kustom kamu
     final ticketId = IdGenerator.generateTicketId(nextSequence);
 
     final newTicket = TicketEntity(
@@ -79,11 +75,10 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
       attachments: _selectedImages.map((file) => file.path).toList(),
     );
 
-    // Tampilkan loading dialog atau indikator jika perlu
     await ref.read(ticketListProvider.notifier).addTicket(newTicket);
     
     if (mounted) {
-      Navigator.pop(context); // Kembali ke Dashboard
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Tiket $ticketId berhasil dibuat!"),
@@ -95,13 +90,16 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
       appBar: AppBar(
         title: const Text("Create New Ticket"),
         centerTitle: true,
+        backgroundColor: isDark ? Colors.grey.shade800 : Colors.white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -110,24 +108,34 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Judul Masalah", style: textTheme.titleMedium),
+              Text("Judul Masalah", 
+                style: textTheme.titleMedium?.copyWith(
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
                   hintText: "Contoh: WiFi Kantor Bermasalah",
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: isDark ? Colors.grey.shade800 : Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
+                  hintStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                 ),
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
                 validator: (v) => v!.isEmpty ? "Judul wajib diisi" : null,
               ),
               const SizedBox(height: 20),
               
-              Text("Deskripsi Detail", style: textTheme.titleMedium),
+              Text("Deskripsi Detail", 
+                style: textTheme.titleMedium?.copyWith(
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _descController,
@@ -135,17 +143,23 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
                 decoration: InputDecoration(
                   hintText: "Jelaskan detail kendala Anda...",
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: isDark ? Colors.grey.shade800 : Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
+                  hintStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                 ),
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
                 validator: (v) => v!.isEmpty ? "Deskripsi wajib diisi" : null,
               ),
               const SizedBox(height: 20),
               
-              Text("Prioritas", style: textTheme.titleMedium),
+              Text("Prioritas", 
+                style: textTheme.titleMedium?.copyWith(
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
               const SizedBox(height: 8),
               Row(
                 children: TicketPriority.values.map((priority) {
@@ -158,11 +172,11 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
                         onSelected: (selected) {
                           if (selected) setState(() => _selectedPriority = priority);
                         },
-                        selectedColor: AppColors.primary.withOpacity(0.2),
+                        selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                         labelStyle: TextStyle(
                           color: _selectedPriority == priority 
-                            ? AppColors.primary 
-                            : Colors.grey,
+                            ? Theme.of(context).colorScheme.primary 
+                            : isDark ? Colors.grey.shade400 : Colors.grey,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -173,7 +187,11 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
               ),
               const SizedBox(height: 20),
               
-              Text("Lampiran Gambar", style: textTheme.titleMedium),
+              Text("Lampiran Gambar", 
+                style: textTheme.titleMedium?.copyWith(
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
               const SizedBox(height: 12),
               SizedBox(
                 height: 100,
@@ -188,11 +206,14 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
                           width: 100,
                           margin: const EdgeInsets.only(right: 8),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark ? Colors.grey.shade800 : Colors.white,
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey.shade300),
+                            border: Border.all(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
                           ),
-                          child: const Icon(Icons.add_a_photo, color: Colors.grey),
+                          child: Icon(
+                            Icons.add_a_photo,
+                            color: isDark ? Colors.grey.shade400 : Colors.grey,
+                          ),
                         ),
                       );
                     }
@@ -214,7 +235,7 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
                           right: 8,
                           child: GestureDetector(
                             onTap: () => _removeImage(index),
-                            child: const CircleAvatar(
+                            child: CircleAvatar(
                               radius: 12,
                               backgroundColor: Colors.red,
                               child: Icon(Icons.close, size: 14, color: Colors.white),
@@ -234,7 +255,7 @@ class _CreateTicketScreenState extends ConsumerState<CreateTicketScreen> {
                 child: ElevatedButton(
                   onPressed: _submitTicket,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

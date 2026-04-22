@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/theme/theme_provider.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -9,21 +10,33 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
+      backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
       appBar: AppBar(
-        title: const Text('Profil Saya'),
+        title: Text(
+          'Profil Saya',
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        ),
         centerTitle: true,
+        backgroundColor: isDark ? Colors.grey.shade800 : Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
             onPressed: () => _handleLogout(context, ref),
-            icon: const Icon(Icons.logout, color: AppColors.error),
+            icon: Icon(Icons.logout, color: AppColors.error),
           ),
         ],
       ),
       body: user == null
-          ? const Center(child: Text("Data user tidak ditemukan"))
+          ? Center(
+              child: Text(
+                "Data user tidak ditemukan",
+                style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+              ),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -47,13 +60,14 @@ class ProfileScreen extends ConsumerWidget {
                   Text(
                     user.name,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                   ),
                   Text(
                     user.role.name.toUpperCase(),
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 1.2,
                     ),
@@ -65,15 +79,30 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.email_outlined,
                     label: 'Email',
                     value: user.email,
+                    isDark: isDark,
                   ),
                   _buildProfileTile(
                     icon: Icons.badge_outlined,
                     label: 'User ID',
                     value: user.id,
+                    isDark: isDark,
                   ),
-                  
+                  _buildProfileTile(
+                    icon: Icons.dark_mode_outlined,
+                    label: 'App Theme',
+                    value: ref.watch(themeProvider) == ThemeMode.dark
+                        ? 'Dark Mode'
+                        : 'Light Mode',
+                    trailing: Switch(
+                      value: ref.watch(themeProvider) == ThemeMode.dark,
+                      onChanged: (_) =>
+                          ref.read(themeProvider.notifier).toggleTheme(),
+                    ),
+                    isDark: isDark,
+                  ),
+
                   const SizedBox(height: 40),
-                  
+
                   // Logout Button
                   SizedBox(
                     width: double.infinity,
@@ -81,13 +110,22 @@ class ProfileScreen extends ConsumerWidget {
                       onPressed: () => _handleLogout(context, ref),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.error,
-                        side: const BorderSide(color: AppColors.error),
+                        side: BorderSide(
+                          color: AppColors.error,
+                          width: isDark ? 1.5 : 1,
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Logout dari Aplikasi'),
+                      child: Text(
+                        'Logout dari Aplikasi',
+                        style: TextStyle(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -100,26 +138,46 @@ class ProfileScreen extends ConsumerWidget {
     required IconData icon,
     required String label,
     required String value,
+    Widget? trailing,
+    required bool isDark,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.grey.shade800 : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+          color: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
+        ),
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primary),
+          Icon(icon, color: isDark ? Colors.grey.shade300 : AppColors.primary),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                ),
+              ],
+            ),
           ),
+          if (trailing != null) trailing,
         ],
       ),
     );
@@ -128,7 +186,7 @@ class ProfileScreen extends ConsumerWidget {
   void _handleLogout(BuildContext context, WidgetRef ref) async {
     // 1. Panggil fungsi logout di repository via provider
     await ref.read(authRepositoryProvider).logout();
-    
+
     // 2. Reset state user menjadi null
     ref.read(currentUserProvider.notifier).setUser(null);
 

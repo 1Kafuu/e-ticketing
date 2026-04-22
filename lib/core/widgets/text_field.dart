@@ -9,6 +9,7 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? Function(String?)? validator;
   final InputDecoration? decoration;
+  final bool isDark;
 
   const CustomTextField({
     super.key,
@@ -19,6 +20,7 @@ class CustomTextField extends StatelessWidget {
     this.controller,
     this.validator,
     this.decoration,
+    this.isDark = false,
   });
 
   @override
@@ -26,25 +28,49 @@ class CustomTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white : null,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           obscureText: isPassword,
           validator: validator,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: icon != null ? Icon(icon, color: AppColors.textSecondary) : null,
+            hintStyle: TextStyle(color: isDark ? Colors.grey.shade500 : Colors.grey.shade400),
+            prefixIcon: icon != null
+                ? Icon(
+                    icon,
+                    color: isDark ? Colors.grey.shade300 : AppColors.textSecondary,
+                  )
+                : null,
             filled: true,
-            fillColor: Colors.white,
+            fillColor: isDark ? Colors.grey.shade800 : Colors.white,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+              borderSide: BorderSide(
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+              borderSide: BorderSide(
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark ? AppColors.primary : AppColors.primary,
+                width: 2,
+              ),
             ),
           ),
         ),

@@ -1,21 +1,26 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../domain/entities/ticket_entity.dart';
+import '../../domain/entities/ticket_enum.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class TicketCard extends StatelessWidget {
   final TicketEntity ticket;
-  const TicketCard({super.key, required this.ticket});
+  final bool isDark;
+  const TicketCard({super.key, required this.ticket, this.isDark = false});
 
   @override
   Widget build(BuildContext context) {
+    final borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade200;
+    final backgroundColor = Theme.of(context).colorScheme.surface;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         // 1. Ganti Row jadi Column
@@ -45,10 +50,13 @@ class TicketCard extends StatelessWidget {
               width: double.infinity,
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.image_outlined, color: AppColors.primary),
+              child: Icon(
+                Icons.image_outlined, 
+                color: isDark ? Colors.grey.shade400 : AppColors.primary,
+              ),
             ),
 
           const SizedBox(height: 12), // Beri jarak antara gambar dan teks
@@ -63,7 +71,10 @@ class TicketCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       ticket.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : null,
+                      ),
                     ),
                   ),
                   // Status Badge
@@ -92,7 +103,10 @@ class TicketCard extends StatelessWidget {
                 ticket.description,
                 maxLines: 2, // Deskripsi bisa lebih panjang dikit
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.grey.shade400 : null,
+                ),
               ),
             ],
           ),
@@ -103,6 +117,19 @@ class TicketCard extends StatelessWidget {
 
   Color _getStatusColor(dynamic status) {
     // Logika warna berdasarkan TicketStatus enum
-    return AppColors.primary; // Placeholder
+    switch (status) {
+      case TicketStatus.open:
+        return Colors.green;
+      case TicketStatus.pending:
+        return Colors.blue;
+      case TicketStatus.resolved:
+        return Colors.purple;
+      case TicketStatus.closed:
+        return Colors.grey;
+      case TicketStatus.inProgress:
+        return Colors.orange;
+      default:
+        return AppColors.primary;
+    }
   }
 }

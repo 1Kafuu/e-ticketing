@@ -44,10 +44,26 @@ class AppTheme {
     ),
   );
   
-  // Implementasi Dark Mode (Menyesuaikan warna utama)
+
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    colorSchemeSeed: AppColors.primary,
+    scaffoldBackgroundColor: AppColors.backgroundDark,
+    colorScheme: const ColorScheme.dark(
+      primary: AppColors.primary,
+      secondary: AppColors.secondary,
+      surface: AppColors.surfaceDark,
+    ),
+    textTheme: GoogleFonts.poppinsTextTheme().copyWith(
+      headlineLarge: GoogleFonts.poppins(color: AppColors.textPrimaryDark, fontWeight: FontWeight.bold, fontSize: 28),
+      titleLarge: GoogleFonts.poppins(color: AppColors.textPrimaryDark, fontWeight: FontWeight.w600, fontSize: 20),
+      bodyMedium: GoogleFonts.poppins(color: AppColors.textPrimaryDark, fontSize: 14),
+      bodySmall: GoogleFonts.poppins(color: AppColors.textSecondaryDark, fontSize: 12),
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      iconTheme: IconThemeData(color: AppColors.textPrimaryDark),
+    ),
   );
 }

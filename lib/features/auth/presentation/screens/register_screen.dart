@@ -74,10 +74,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
+      backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
       appBar: AppBar(
         title: const Text('Daftar Akun'),
         toolbarHeight: 100,
+        backgroundColor: isDark ? Colors.grey.shade800 : Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: isDark ? Colors.white : null),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -86,55 +92,59 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Buat Akun Baru',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  color: AppColors.primary,
-                ),
-              ),
+               Text(
+                 'Buat Akun Baru',
+                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                   color: isDark ? Colors.white : AppColors.primary,
+                 ),
+               ),
               const SizedBox(height: 8),
               const Text('Silakan isi data diri Anda untuk bergabung'),
-              const SizedBox(height: 32),
-              
-              CustomTextField(
-                controller: _nameController,
-                label: 'Nama Lengkap',
-                hint: 'Masukkan nama lengkap',
-                icon: Icons.person_outline,
-                validator: AppValidators.validateName,
-              ),
-              const SizedBox(height: 16),
-              
-              CustomTextField(
-                controller: _emailController,
-                label: 'Email',
-                hint: 'Masukkan email anda',
-                icon: Icons.email_outlined,
-                validator: AppValidators.validateEmail,
-              ),
-              const SizedBox(height: 16),
-              
-              CustomTextField(
-                controller: _passwordController,
-                label: 'Password',
-                hint: 'Masukkan password',
-                icon: Icons.lock_outline,
-                isPassword: true,
-                validator: AppValidators.validatePassword,
-              ),
-              const SizedBox(height: 16),
+               const SizedBox(height: 32),
+               
+               CustomTextField(
+                 controller: _nameController,
+                 label: 'Nama Lengkap',
+                 hint: 'Masukkan nama lengkap',
+                 icon: Icons.person_outline,
+                 validator: AppValidators.validateName,
+                 isDark: isDark,
+               ),
+               const SizedBox(height: 16),
+               
+               CustomTextField(
+                 controller: _emailController,
+                 label: 'Email',
+                 hint: 'Masukkan email anda',
+                 icon: Icons.email_outlined,
+                 validator: AppValidators.validateEmail,
+                 isDark: isDark,
+               ),
+               const SizedBox(height: 16),
+               
+               CustomTextField(
+                 controller: _passwordController,
+                 label: 'Password',
+                 hint: 'Masukkan password',
+                 icon: Icons.lock_outline,
+                 isPassword: true,
+                 validator: AppValidators.validatePassword,
+                 isDark: isDark,
+               ),
+               const SizedBox(height: 16),
 
-              CustomTextField(
-                controller: _confirmPasswordController,
-                label: 'Konfirmasi Password',
-                hint: 'Ulangi password',
-                icon: Icons.lock_reset_outlined,
-                isPassword: true,
-                validator: (val) => AppValidators.validateConfirmPassword(
-                  val, 
-                  _passwordController.text,
-                ),
-              ),
+               CustomTextField(
+                 controller: _confirmPasswordController,
+                 label: 'Konfirmasi Password',
+                 hint: 'Ulangi password',
+                 icon: Icons.lock_reset_outlined,
+                 isPassword: true,
+                 validator: (val) => AppValidators.validateConfirmPassword(
+                   val, 
+                   _passwordController.text,
+                 ),
+                 isDark: isDark,
+               ),
               
               const SizedBox(height: 32),
               
@@ -162,13 +172,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                 ),
               ),
-              const SizedBox(height: 20),
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Sudah punya akun? Login di sini'),
-                ),
-              ),
+               const SizedBox(height: 20),
+               Center(
+                 child: TextButton(
+                   onPressed: () => Navigator.pop(context),
+                   child: Text(
+                     'Sudah punya akun? Login di sini',
+                     style: TextStyle(color: isDark ? Colors.grey.shade300 : Colors.grey.shade700),
+                   ),
+                 ),
+               ),
             ],
           ),
         ),

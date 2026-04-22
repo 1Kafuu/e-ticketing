@@ -10,14 +10,20 @@ class GlobalHistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     // Ambil semua data tiket untuk mengumpulkan semua history
     final ticketsAsync = ref.watch(ticketListProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
       appBar: AppBar(
-        title: const Text("Riwayat Aktivitas Global"),
+        title: Text(
+          "Riwayat Aktivitas Global",
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        ),
         elevation: 0,
+        backgroundColor: isDark ? Colors.grey.shade800 : Colors.white,
       ),
       body: ticketsAsync.when(
         data: (tickets) {
@@ -39,8 +45,11 @@ class GlobalHistoryScreen extends ConsumerWidget {
             (a['data'] as TicketHistoryEntity).timestamp));
 
           if (allHistoryEntries.isEmpty) {
-            return const Center(
-              child: Text("Belum ada riwayat aktivitas", style: TextStyle(color: Colors.grey)),
+            return Center(
+              child: Text(
+                "Belum ada riwayat aktivitas",
+                style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+              ),
             );
           }
 
@@ -74,7 +83,10 @@ class GlobalHistoryScreen extends ConsumerWidget {
                         ),
                         if (!isLast)
                           Expanded(
-                            child: Container(width: 2, color: Colors.grey.shade300),
+                            child: Container(
+                              width: 2,
+                              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                            ),
                           ),
                       ],
                     ),
@@ -87,7 +99,14 @@ class GlobalHistoryScreen extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(item.action, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                              Text(
+                                item.action,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                              ),
                               // Tambahan Badge ID Tiket agar user tahu ini update tiket mana
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -95,16 +114,33 @@ class GlobalHistoryScreen extends ConsumerWidget {
                                   color: AppColors.primary.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: Text("#$ticketId", style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                                child: Text(
+                                  "#$ticketId",
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Text(item.description, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                          Text(
+                            item.description,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           Text(
                             "Oleh: ${item.updatedBy} • ${item.timestamp.day}/${item.timestamp.month} ${item.timestamp.hour}:${item.timestamp.minute.toString().padLeft(2, '0')}",
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.primary),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? Colors.grey.shade300 : Colors.grey.shade500,
+                            ),
                           ),
                           const SizedBox(height: 24),
                         ],
@@ -117,7 +153,12 @@ class GlobalHistoryScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
+        error: (err, stack) => Center(
+          child: Text(
+            "Error: $err",
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+          ),
+        ),
       ),
     );
   }

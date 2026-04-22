@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../providers/ticket_provider.dart';
 import '../widgets/ticket_card.dart';
 import 'ticket_detail_screen.dart';
@@ -10,23 +9,32 @@ class TicketListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final ticketsAsync = ref.watch(ticketListProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
       appBar: AppBar(
-        title: const Text("All Tickets"),
+        title: Text(
+          "All Tickets",
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        ),
         actions: [
           IconButton(
             onPressed: () => ref.read(ticketListProvider.notifier).refresh(),
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: isDark ? Colors.white : Colors.black),
           ),
         ],
       ),
       body: ticketsAsync.when(
         data: (tickets) {
           if (tickets.isEmpty) {
-            return const Center(child: Text("No tickets found"));
+            return Center(
+              child: Text(
+                "No tickets found",
+                style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+              ),
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -49,7 +57,12 @@ class TicketListScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text("Error: $e")),
+        error: (e, s) => Center(
+          child: Text(
+            "Error: $e",
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+          ),
+        ),
       ),
     );
   }

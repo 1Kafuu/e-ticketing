@@ -26,7 +26,7 @@ class DashboardScreen extends ConsumerWidget {
     final stats = ref.watch(ticketStatsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         // Meniru bagian kiri AppBar: Welcome User
         toolbarHeight: 100,
@@ -41,42 +41,42 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ],
         ),
-        actions: [
-          // Meniru tombol lonceng notifikasi (FR-007)
-          IconButton(
-            onPressed: () {}, // Logika ke halaman notifikasi
-            icon: const Icon(Icons.notifications_none),
-          ),
-          IconButton(
-            onPressed: () async {
-              await ref.read(authRepositoryProvider).logout();
-              ref.read(currentUserProvider.notifier).setUser(null);
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false,
-                );
-              }
-            },
-            icon: const Icon(Icons.logout, color: Colors.red),
-          ),
-        ],
+         actions: [
+           // Meniru tombol lonceng notifikasi (FR-007)
+           IconButton(
+             onPressed: () {}, // Logika ke halaman notifikasi
+             icon: Icon(Icons.notifications_none, color: Theme.of(context).colorScheme.onSurface),
+           ),
+           IconButton(
+             onPressed: () async {
+               await ref.read(authRepositoryProvider).logout();
+               ref.read(currentUserProvider.notifier).setUser(null);
+               if (context.mounted) {
+                 Navigator.of(context).pushAndRemoveUntil(
+                   MaterialPageRoute(builder: (context) => const LoginScreen()),
+                   (route) => false,
+                 );
+               }
+             },
+             icon: const Icon(Icons.logout),
+           ),
+         ],
       ),
 
-      // Floating Action Button sesuai referensi (FR-005: Membuat tiket)
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreateTicketScreen()),
-          );
-        },
-        backgroundColor: AppColors.primary,
-        elevation: 10,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
-      ),
+       // Floating Action Button sesuai referensi (FR-005: Membuat tiket)
+       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+       floatingActionButton: FloatingActionButton(
+         onPressed: () {
+           Navigator.push(
+             context,
+             MaterialPageRoute(builder: (context) => const CreateTicketScreen()),
+           );
+         },
+         backgroundColor: Theme.of(context).colorScheme.primary,
+         elevation: 10,
+         shape: const CircleBorder(),
+         child: const Icon(Icons.add, color: Colors.white, size: 30),
+       ),
 
       // Bottom Navigation Bar sesuai referensi
       bottomNavigationBar: BottomAppBar(
@@ -139,11 +139,11 @@ class DashboardScreen extends ConsumerWidget {
             children: [
               // 1. Baris Search sesuai desain
               const SizedBox(height: 8),
-              _buildSearchSection(),
+               _buildSearchSection(context),
 
-              // 2. Section Statistik (FR-008)
-              const SizedBox(height: 24),
-              _buildStatCards(textTheme, stats),
+               // 2. Section Statistik (FR-008)
+               const SizedBox(height: 24),
+               _buildStatCards(context, textTheme, stats),
 
               // 3. Banner "Welcome" sesuai desain
               const SizedBox(height: 24),
@@ -159,93 +159,100 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  // Widget Helper: Search Section
-  Widget _buildSearchSection() {
-    return const CustomTextField(
-      label: "Search",
-      hint: "Search tickets...",
-      icon: Icons.search,
-      decoration: InputDecoration(
-        prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
-        hintText: "Search",
-        hintStyle: TextStyle(color: AppColors.textSecondary),
-        filled: true,
-        fillColor: Colors.white, // Meniru warna accent bersih
-        contentPadding: EdgeInsets.symmetric(horizontal: 20),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(25.0)),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(25.0)),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
+    // Widget Helper: Search Section
+    Widget _buildSearchSection(BuildContext context) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+     return CustomTextField(
+       label: "Search",
+       hint: "Search tickets...",
+       icon: Icons.search,
+       decoration: InputDecoration(
+         prefixIcon: Icon(Icons.search, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+         hintText: "Search",
+         hintStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+         filled: true,
+         fillColor: isDark ? Colors.grey.shade900 : Colors.white,
+         contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+         border: OutlineInputBorder(
+           borderRadius: const BorderRadius.all(Radius.circular(25.0)),
+           borderSide: BorderSide.none,
+         ),
+         enabledBorder: OutlineInputBorder(
+           borderRadius: const BorderRadius.all(Radius.circular(25.0)),
+           borderSide: BorderSide.none,
+         ),
+       ),
+     );
+   }
 
-  Widget _buildStatCards(TextTheme textTheme, Map<String, int> stats) {
-    // Langsung kembalikan Column/Grid tanpa SliverToBoxAdapter
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Tickets Summary",
-          style: textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        GridView.count(
-          shrinkWrap: true, // Wajib true karena di dalam ScrollView
-          physics:
-              const NeverScrollableScrollPhysics(), // Wajib agar scroll ditangani SingleChildScrollView
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 1.4,
-          children: [
-            StatCard(
-              title: "Total Tickets",
-              count: stats['total'].toString(),
-              icon: Icons.confirmation_number_outlined,
-              color: AppColors.primary,
-            ),
-            StatCard(
-              title: "Status Open",
-              count: stats['open'].toString(),
-              icon: Icons.hourglass_empty_rounded,
-              color: AppColors.warning,
-            ),
-            StatCard(
-              title: "In Progress",
-              count: stats['inProgress'].toString(),
-              icon: Icons.sync_rounded,
-              color: Colors.blue,
-            ),
-            StatCard(
-              title: "Resolved",
-              count: stats['resolved'].toString(),
-              icon: Icons.check_circle_outline_rounded,
-              color: Colors.green,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+    Widget _buildStatCards(BuildContext context, TextTheme textTheme, Map<String, int> stats) {
+     // Langsung kembalikan Column/Grid tanpa SliverToBoxAdapter
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+         Text(
+           "Tickets Summary",
+           style: textTheme.titleMedium?.copyWith(
+             fontWeight: FontWeight.bold,
+             color: Theme.of(context).colorScheme.onSurface,
+           ),
+         ),
+         const SizedBox(height: 16),
+         GridView.count(
+           shrinkWrap: true, // Wajib true karena di dalam ScrollView
+           physics:
+               const NeverScrollableScrollPhysics(), // Wajib agar scroll ditangani SingleChildScrollView
+           crossAxisCount: 2,
+           crossAxisSpacing: 16,
+           mainAxisSpacing: 16,
+           childAspectRatio: 1.4,
+           children: [
+              StatCard(
+                title: "Total Tickets",
+                count: stats['total'].toString(),
+                icon: Icons.confirmation_number_outlined,
+                color: Theme.of(context).colorScheme.secondary,
+                isDark: Theme.of(context).brightness == Brightness.dark,
+              ),
+              StatCard(
+                title: "Status Open",
+                count: stats['open'].toString(),
+                icon: Icons.hourglass_empty_rounded,
+                color: AppColors.warning,
+                isDark: Theme.of(context).brightness == Brightness.dark,
+              ),
+              StatCard(
+                title: "In Progress",
+                count: stats['inProgress'].toString(),
+                icon: Icons.sync_rounded,
+                color: Theme.of(context).colorScheme.secondary,
+                isDark: Theme.of(context).brightness == Brightness.dark,
+              ),
+              StatCard(
+                title: "Resolved",
+                count: stats['resolved'].toString(),
+                icon: Icons.check_circle_outline_rounded,
+                color: Colors.green,
+                isDark: Theme.of(context).brightness == Brightness.dark,
+              ),
+           ],
+         ),
+       ],
+     );
+   }
 
-  // Widget Helper: Welcome Banner
-  Widget _buildWelcomeBanner(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15.0),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
+   // Widget Helper: Welcome Banner
+   Widget _buildWelcomeBanner(BuildContext context) {
+     final isDark = Theme.of(context).brightness == Brightness.dark;
+     final textTheme = Theme.of(context).textTheme;
+     return Container(
+       width: double.infinity,
+       padding: const EdgeInsets.all(16.0),
+       decoration: BoxDecoration(
+         color: isDark ? Colors.grey.shade900 : Colors.white,
+         borderRadius: BorderRadius.circular(15.0),
+         border: Border.all(color: isDark ? Colors.grey.shade700 : Colors.grey.shade200),
+       ),
       child: Row(
         children: [
           Image(
@@ -265,10 +272,10 @@ class DashboardScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Welcome!", style: Theme.of(context).textTheme.titleLarge),
+                Text("Welcome!", style: textTheme.titleLarge?.copyWith(color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary)),
                 Text(
                   "Let's manage your tickets smoothly.",
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: textTheme.bodyMedium?.copyWith(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
                 ),
               ],
             ),
@@ -278,33 +285,34 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  // Widget Helper: Ongoing Tickets Section
-  Widget _buildOngoingSection(
-    BuildContext context,
-    AsyncValue<List<TicketEntity>> ticketsAsync,
-  ) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("Tickets", style: Theme.of(context).textTheme.titleLarge),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const TicketListScreen(),
-                  ),
-                );
-              },
-              child: const Text(
-                "view all",
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-            ),
-          ],
-        ),
+   // Widget Helper: Ongoing Tickets Section
+   Widget _buildOngoingSection(
+     BuildContext context,
+     AsyncValue<List<TicketEntity>> ticketsAsync,
+   ) {
+     final isDark = Theme.of(context).brightness == Brightness.dark;
+     return Column(
+       children: [
+         Row(
+           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+           children: [
+             Text("Tickets", style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
+             TextButton(
+               onPressed: () {
+                 Navigator.push(
+                   context,
+                   MaterialPageRoute(
+                     builder: (context) => const TicketListScreen(),
+                   ),
+                 );
+               },
+               child: Text(
+                 "view all",
+                 style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+               ),
+             ),
+           ],
+         ),
         const SizedBox(height: 12),
         // GridView untuk meniru tata letak Ongoing Projects
         const SizedBox(height: 12),

@@ -7,6 +7,7 @@ import '../providers/auth_provider.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../screens/register_screen.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../core/theme/theme_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -60,8 +61,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -82,10 +85,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   'Selamat Datang',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: isDark ? Colors.white : AppColors.primary,
                   ),
                 ),
-                const Text('Silakan login untuk mengakses Helpdesk'),
+                Text(
+                  'Silakan login untuk mengakses Helpdesk',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+                  ),
+                ),
                 const SizedBox(height: 40),
 
                 CustomTextField(
@@ -94,6 +102,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   hint: 'Masukkan email anda',
                   icon: Icons.email_outlined,
                   validator: AppValidators.validateEmail, // 3. Pasang Validator
+                  isDark: isDark,
                 ),
                 const SizedBox(height: 20),
 
@@ -109,6 +118,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       return 'Password tidak boleh kosong';
                     return null;
                   },
+                  isDark: isDark,
                 ),
 
                 const SizedBox(height: 40),
@@ -144,7 +154,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       );
                     },
-                    child: const Text('Belum punya akun? Daftar di sini'),
+                    child: Text(
+                      'Belum punya akun? Daftar di sini',
+                      style: TextStyle(color: isDark ? Colors.grey.shade300 : Colors.grey.shade700),
+                    ),
                   ),
                 ),
               ],
