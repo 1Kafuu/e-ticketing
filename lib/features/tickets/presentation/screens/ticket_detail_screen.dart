@@ -7,6 +7,7 @@ import '../../domain/entities/comment_entity.dart';
 import '../widgets/status_badge.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/ticket_provider.dart';
+import '../widgets/ticket_tracking_stepper.dart';
 
 class TicketDetailScreen extends ConsumerStatefulWidget {
   final TicketEntity ticket;
@@ -73,6 +74,20 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                       ),
                       const Divider(height: 40),
                       const Text(
+                        "Tracking Status",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Masukkan widget Stepper di sini
+                      TicketTrackingStepper(
+                        currentStatus: currentTicket.status,
+                      ),
+
+                      const Divider(height: 50),
+                      const Text(
                         "Description",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -85,7 +100,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                         style: const TextStyle(fontSize: 15, height: 1.5),
                       ),
                       const SizedBox(height: 30),
-
+                      
                       // --- LAMPIRAN ---
                       if (currentTicket.attachments.isNotEmpty) ...[
                         const Text(

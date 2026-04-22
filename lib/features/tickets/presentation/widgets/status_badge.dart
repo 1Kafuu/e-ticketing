@@ -19,6 +19,9 @@ class StatusBadge extends StatelessWidget {
       case TicketStatus.pending:
         backgroundColor = Colors.orange.shade600;
         break;
+      case TicketStatus.inProgress:
+        backgroundColor = const Color.fromARGB(255, 247, 251, 0);
+        break;
       case TicketStatus.resolved:
         backgroundColor = Colors.green.shade600;
         break;

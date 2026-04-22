@@ -211,8 +211,8 @@ class DashboardScreen extends ConsumerWidget {
               color: AppColors.warning,
             ),
             StatCard(
-              title: "Pending",
-              count: stats['pending'].toString(),
+              title: "In Progress",
+              count: stats['inProgress'].toString(),
               icon: Icons.sync_rounded,
               color: Colors.blue,
             ),

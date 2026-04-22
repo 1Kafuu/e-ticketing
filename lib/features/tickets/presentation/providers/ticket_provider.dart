@@ -77,7 +77,7 @@ final ticketStatsProvider = Provider<Map<String, int>>((ref) {
       return {
         'total': tickets.length, // Total tiket [cite: 87]
         'open': tickets.where((t) => t.status == TicketStatus.open).length,
-        'pending': tickets.where((t) => t.status == TicketStatus.pending).length,
+        'inProgress': tickets.where((t) => t.status == TicketStatus.inProgress).length,
         'resolved': tickets.where((t) => t.status == TicketStatus.resolved).length,
         'closed': tickets.where((t) => t.status == TicketStatus.closed).length,
       };
@@ -86,7 +86,7 @@ final ticketStatsProvider = Provider<Map<String, int>>((ref) {
     orElse: () => {
       'total': 0,
       'open': 0,
-      'pending': 0,
+      'inProgress': 0,
       'resolved': 0,
       'closed': 0,
     },

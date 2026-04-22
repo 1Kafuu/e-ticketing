@@ -2,7 +2,8 @@ enum TicketStatus {
   open('Open'),
   pending('Pending'),
   resolved('Resolved'),
-  closed('Closed');
+  closed('Closed'),
+  inProgress('In Progress');
 
   final String label;
   const TicketStatus(this.label);
