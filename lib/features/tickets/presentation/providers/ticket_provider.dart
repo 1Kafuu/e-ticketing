@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/ticket_entity.dart';
+import '../../domain/entities/comment_entity.dart';
 import '../../domain/repositories/ticket_repository.dart';
 import '../../data/repositories/ticket_repository_impl.dart';
 import '../../data/datasources/ticket_local_data_source.dart';
@@ -21,7 +22,8 @@ final ticketRepositoryProvider = Provider<TicketRepository>((ref) {
 class TicketListNotifier extends AsyncNotifier<List<TicketEntity>> {
   @override
   Future<List<TicketEntity>> build() async {
-    return ref.read(ticketRepositoryProvider).getTickets();
+    final tickets = await ref.read(ticketRepositoryProvider).getTickets();
+    return tickets;
   }
 
   Future<void> refresh() async {
@@ -38,8 +40,30 @@ class TicketListNotifier extends AsyncNotifier<List<TicketEntity>> {
       return ref.read(ticketRepositoryProvider).getTickets();
     });
   }
+
+  Future<void> sendComment({
+    required String ticketId,
+    required CommentEntity comment,
+    String? parentCommentId,
+  }) async {
+    // Kita tidak gunakan AsyncValue.guard sementara untuk memastikan error terlihat jelas
+    try {
+      await ref
+          .read(ticketRepositoryProvider)
+          .addComment(ticketId, comment, parentCommentId: parentCommentId);
+
+      // Ambil data terbaru
+      final updatedTickets = await ref
+          .read(ticketRepositoryProvider)
+          .getTickets();
+      state = AsyncValue.data(updatedTickets);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+    }
+  }
 }
 
-final ticketListProvider = AsyncNotifierProvider<TicketListNotifier, List<TicketEntity>>(() {
-  return TicketListNotifier();
-});
+final ticketListProvider =
+    AsyncNotifierProvider<TicketListNotifier, List<TicketEntity>>(() {
+      return TicketListNotifier();
+    });

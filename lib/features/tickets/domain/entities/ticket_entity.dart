@@ -1,4 +1,5 @@
 import 'ticket_enum.dart';
+import 'comment_entity.dart';
 
 class TicketEntity {
   final String id;
@@ -9,6 +10,7 @@ class TicketEntity {
   final DateTime createdAt;
   final String userId;
   final List<String> attachments;
+  final List<CommentEntity> comments;
 
   const TicketEntity({
     required this.id,
@@ -19,5 +21,6 @@ class TicketEntity {
     required this.createdAt,
     required this.userId,
     this.attachments = const [],
+    this.comments = const [],
   });
 }

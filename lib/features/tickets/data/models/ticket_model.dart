@@ -1,5 +1,6 @@
 import '../../domain/entities/ticket_entity.dart';
 import '../../domain/entities/ticket_enum.dart';
+import '../../domain/entities/comment_entity.dart';
 
 class TicketModel extends TicketEntity {
   const TicketModel({
@@ -11,6 +12,7 @@ class TicketModel extends TicketEntity {
     required super.createdAt,
     required super.userId,
     super.attachments,
+    super.comments,
   });
 
   factory TicketModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class TicketModel extends TicketEntity {
       createdAt: DateTime.parse(json['createdAt']),
       userId: json['userId'],
       attachments: List<String>.from(json['attachments'] ?? []),
+      comments: _commentsFromJson(json['comments'] ?? []),
     );
   }
 
@@ -42,6 +45,40 @@ class TicketModel extends TicketEntity {
       'createdAt': createdAt.toIso8601String(),
       'userId': userId,
       'attachments': attachments,
+      'comments': _commentsToJson(comments),
     };
+  }
+
+  static List<CommentEntity> _commentsFromJson(List<dynamic>? json) {
+    if (json == null) return [];
+    return json
+        .map(
+          (c) => CommentEntity(
+            id: c['id'],
+            senderName: c['senderName'],
+            senderId: c['senderId'],
+            message: c['message'],
+            timestamp: DateTime.parse(c['timestamp']),
+            replies: _commentsFromJson(c['replies']), // Rekursif untuk balasan
+          ),
+        )
+        .toList();
+  }
+
+  static List<Map<String, dynamic>> _commentsToJson(
+    List<CommentEntity> comments,
+  ) {
+    return comments
+        .map(
+          (c) => {
+            'id': c.id,
+            'senderName': c.senderName,
+            'senderId': c.senderId,
+            'message': c.message,
+            'timestamp': c.timestamp.toIso8601String(),
+            'replies': _commentsToJson(c.replies), // Rekursif untuk balasan
+          },
+        )
+        .toList();
   }
 }
