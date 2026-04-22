@@ -12,6 +12,7 @@ import '../../../tickets/presentation/screens/create_ticket_screen.dart';
 import '../../../tickets/presentation/screens/ticket_list_screen.dart';
 import '../../../tickets/presentation/screens/ticket_detail_screen.dart';
 import '../../../tickets/presentation/widgets/ticket_card.dart';
+import '../../../dashboard/presentation/widgets/stat_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -21,6 +22,7 @@ class DashboardScreen extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final textTheme = Theme.of(context).textTheme;
     final ticketsAsync = ref.watch(ticketListProvider);
+    final stats = ref.watch(ticketStatsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -131,11 +133,15 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               _buildSearchSection(),
 
-              // 2. Banner "Welcome" sesuai desain
+              // 2. Section Statistik (FR-008)
+              const SizedBox(height: 24),
+              _buildStatCards(textTheme, stats),
+
+              // 3. Banner "Welcome" sesuai desain
               const SizedBox(height: 24),
               _buildWelcomeBanner(context),
 
-              // 3. Section "Ongoing Tickets" sesuai desain
+              // 4. Section "Ongoing Tickets" sesuai desain
               const SizedBox(height: 24),
               _buildOngoingSection(context, ticketsAsync),
             ],
@@ -167,6 +173,58 @@ class DashboardScreen extends ConsumerWidget {
           borderSide: BorderSide.none,
         ),
       ),
+    );
+  }
+
+  Widget _buildStatCards(TextTheme textTheme, Map<String, int> stats) {
+    // Langsung kembalikan Column/Grid tanpa SliverToBoxAdapter
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Tickets Summary",
+          style: textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        GridView.count(
+          shrinkWrap: true, // Wajib true karena di dalam ScrollView
+          physics:
+              const NeverScrollableScrollPhysics(), // Wajib agar scroll ditangani SingleChildScrollView
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 1.4,
+          children: [
+            StatCard(
+              title: "Total Tickets",
+              count: stats['total'].toString(),
+              icon: Icons.confirmation_number_outlined,
+              color: AppColors.primary,
+            ),
+            StatCard(
+              title: "Status Open",
+              count: stats['open'].toString(),
+              icon: Icons.hourglass_empty_rounded,
+              color: AppColors.warning,
+            ),
+            StatCard(
+              title: "Pending",
+              count: stats['pending'].toString(),
+              icon: Icons.sync_rounded,
+              color: Colors.blue,
+            ),
+            StatCard(
+              title: "Resolved",
+              count: stats['resolved'].toString(),
+              icon: Icons.check_circle_outline_rounded,
+              color: Colors.green,
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -213,16 +271,16 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   // Widget Helper: Ongoing Tickets Section
-  Widget _buildOngoingSection(BuildContext context, AsyncValue<List<TicketEntity>> ticketsAsync) {
+  Widget _buildOngoingSection(
+    BuildContext context,
+    AsyncValue<List<TicketEntity>> ticketsAsync,
+  ) {
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Tickets",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text("Tickets", style: Theme.of(context).textTheme.titleLarge),
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -288,52 +346,4 @@ class DashboardScreen extends ConsumerWidget {
       ],
     );
   }
-
-  // MOCK WIDGET: Ticket Card (Berdasarkan model data)
-  // Widget _buildTicketCardMock(BuildContext context) {
-  //   return Container(
-  //     padding: const EdgeInsets.all(16.0),
-  //     decoration: BoxDecoration(
-  //       color: AppColors.primary, // Card warna utama sesuai desain
-  //       borderRadius: BorderRadius.circular(15.0),
-  //     ),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Text(
-  //           "May 20, 2026",
-  //           style: Theme.of(
-  //             context,
-  //           ).textTheme.bodySmall?.copyWith(color: Colors.white70),
-  //         ),
-  //         const SizedBox(height: 8),
-  //         Text(
-  //           "IT Helpdesk App",
-  //           style: Theme.of(
-  //             context,
-  //           ).textTheme.titleLarge?.copyWith(color: Colors.white),
-  //         ),
-  //         Text(
-  //           "Status: In Progress",
-  //           style: Theme.of(
-  //             context,
-  //           ).textTheme.bodySmall?.copyWith(color: AppColors.warning),
-  //         ),
-  //         const Spacer(),
-  //         // Meniru Progress Bar di reference
-  //         LinearProgressIndicator(
-  //           value: 0.6, // Mock Progress 60%
-  //           backgroundColor: Colors.white24,
-  //           valueColor: const AlwaysStoppedAnimation<Color>(AppColors.warning),
-  //           borderRadius: BorderRadius.circular(5.0),
-  //         ),
-  //         const SizedBox(height: 4),
-  //         const Text(
-  //           "60%",
-  //           style: TextStyle(color: Colors.white, fontSize: 10),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }

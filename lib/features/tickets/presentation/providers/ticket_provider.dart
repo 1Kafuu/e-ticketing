@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/ticket_entity.dart';
+import '../../domain/entities/ticket_enum.dart';
 import '../../domain/entities/comment_entity.dart';
 import '../../domain/repositories/ticket_repository.dart';
 import '../../data/repositories/ticket_repository_impl.dart';
@@ -67,3 +68,27 @@ final ticketListProvider =
     AsyncNotifierProvider<TicketListNotifier, List<TicketEntity>>(() {
       return TicketListNotifier();
     });
+
+final ticketStatsProvider = Provider<Map<String, int>>((ref) {
+  final ticketsAsync = ref.watch(ticketListProvider);
+  
+  return ticketsAsync.maybeWhen(
+    data: (tickets) {
+      return {
+        'total': tickets.length, // Total tiket [cite: 87]
+        'open': tickets.where((t) => t.status == TicketStatus.open).length,
+        'pending': tickets.where((t) => t.status == TicketStatus.pending).length,
+        'resolved': tickets.where((t) => t.status == TicketStatus.resolved).length,
+        'closed': tickets.where((t) => t.status == TicketStatus.closed).length,
+      };
+    },
+    // Default value saat loading atau error
+    orElse: () => {
+      'total': 0,
+      'open': 0,
+      'pending': 0,
+      'resolved': 0,
+      'closed': 0,
+    },
+  );
+});
